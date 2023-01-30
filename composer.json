@@ -1,0 +1,26 @@
+{
+    "name": "jkn/avto-sync-zoomos",
+    "autoload": {
+        "psr-4": {
+            "Jkn\\AvtoSyncZoomos\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Juljan",
+            "email": "y.misiukevich@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.1",
+        "ext-pdo": "*",
+        "jukuan/zoomos-api": "dev-main",
+        "vlucas/phpdotenv": "^5.5",
+        "jukuan/shop-manapi-by": "dev-main"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^6.2"
+    }
+}
