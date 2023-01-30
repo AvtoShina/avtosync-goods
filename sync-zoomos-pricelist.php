@@ -11,7 +11,10 @@ echo 'Start at ' . date('h:i:s Y-m-d') . PHP_EOL;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-$dotenv->required(['API_ZOOMOS_KEY', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD']);
+$dotenv->required([
+    'API_ZOOMOS_KEY',
+    'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'
+]);
 $key = $_ENV['API_ZOOMOS_KEY'];
 
 /** @var PriceListItem[] $items */
@@ -33,7 +36,7 @@ $pdo = new PDO(
 
 foreach ($items as $item) {
     $stmt = $pdo->prepare("SELECT id FROM zoomos_pricelist WHERE id = :id");
-    $stmt->execute(['id' => $item->id]);
+    $stmt->execute(['id' => $item->getId()]);
     $id = $stmt->fetch(PDO::FETCH_COLUMN);
 
     if ($id) {
@@ -43,7 +46,6 @@ foreach ($items as $item) {
             WHERE id = :id'
         );
     } else {
-        // insert
         $stmt = $pdo->prepare(
             'INSERT INTO zoomos_pricelist 
             (id, model, quantity, price, slug, status, is_new, image, vendor_id, vendor_name, category_id, category_name, category_slug, item_date_add, item_date_upd)
