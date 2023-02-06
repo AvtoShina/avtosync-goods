@@ -34,10 +34,15 @@ $pdo = new PDO(
         $_ENV['DB_DATABASE']
     ),
     $_ENV['DB_USERNAME'],
-    $_ENV['DB_PASSWORD']
+    $_ENV['DB_PASSWORD'],
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4']
 );
 
 foreach ($handler->getOffers() as $offer) {
+    if ($offer->getPrice() > 10000) {
+        continue;
+    }
+
     /** @var VendorModelOffer $offer */
     $stmt = $pdo->prepare("SELECT id FROM shopmanager_offers WHERE id = :id");
     $stmt->execute(['id' => $offer->getId()]);
@@ -48,32 +53,33 @@ foreach ($handler->getOffers() as $offer) {
     if ($id) {
         $stmt = $pdo->prepare(
             'UPDATE shopmanager_offers 
-            SET price = :price, available = :available, category_id = :category_id, delivery = :delivery, type_prefix = :type_prefix, vendor = :vendor, model = :model, description = :description, picture = :picture, purpose = :purpose, seat_diameter = :seat_diameter, season = :season, profile_height = :profile_height, width = :width, release_date = :release_date, run_flat = :run_flat, load_index = :load_index, speed_index = :speed_index, construction = :construction, type = :type, spikes = :spikes
+            SET price = :price, available = :available, quantity = :quantity, category_id = :category_id, delivery = :delivery, type_prefix = :type_prefix, vendor = :vendor, model = :model, description = :description, picture = :picture, purpose = :purpose, seat_diameter = :seat_diameter, season = :season, profile_height = :profile_height, width = :width, release_date = :release_date, run_flat = :run_flat, load_index = :load_index, speed_index = :speed_index, construction = :construction, type = :type, spikes = :spikes
             WHERE id = :id'
         );
     } else {
         $stmt = $pdo->prepare(
             'INSERT INTO shopmanager_offers
-            (id, price, available, category_id, delivery, type_prefix, vendor, model, description, picture, purpose, seat_diameter, season, profile_height, width, release_date, run_flat, load_index, speed_index, construction, type, spikes)
-            VALUES (:id, :price, :available, :category_id, :delivery, :type_prefix, :vendor, :model, :description, :picture, :purpose, :seat_diameter, :season, :profile_height, :width, :release_date, :run_flat, :load_index, :speed_index, :construction, :type, :spikes)'
+            (id, price, available, quantity, category_id, delivery, type_prefix, vendor, model, description, picture, purpose, seat_diameter, season, profile_height, width, release_date, run_flat, load_index, speed_index, construction, type, spikes)
+            VALUES (:id, :price, :available, :quantity, :category_id, :delivery, :type_prefix, :vendor, :model, :description, :picture, :purpose, :seat_diameter, :season, :profile_height, :width, :release_date, :run_flat, :load_index, :speed_index, :construction, :type, :spikes)'
         );
 
         // Escape special characters. TODO: refactor this
         $model = $offer->getModel();
-        $model = str_replace('/', '\/', $model);
-        $model = str_replace('\\', '\\\\', $model);
-        $model = str_replace('\'', '\\\'', $model);
-        $model = str_replace('"', '\\"', $model);
-        $model = str_replace('`', '\\`', $model);
-        $model = str_replace('?', '\\?', $model);
-        $model = str_replace('!', '\\!', $model);
-        $model = str_replace(';', '\\;', $model);
+//        $model = str_replace('/', '', $model);
+//        $model = str_replace('\\', '', $model);
+//        $model = str_replace('\'', '', $model);
+//        $model = str_replace('"', '', $model);
+//        $model = str_replace('`', '', $model);
+//        $model = str_replace('?', '\\?', $model);
+//        $model = str_replace('!', '\\!', $model);
+//        $model = str_replace(';', '\\;', $model);
 
         try {
             $stmt->execute([
                 'id' => $offer->getId(),
                 'price' => $offer->getPrice(),
                 'available' => (int)$offer->getAvailable(),
+                'quantity' => (int)$offer->getQuantityInStock(),
                 'category_id' => $offer->getCategoryId(),
                 'delivery' => $offer->getDelivery(),
                 'type_prefix' => $offer->getTypePrefix(),
@@ -96,6 +102,9 @@ foreach ($handler->getOffers() as $offer) {
             ]);
         } catch (PDOException $e) {
             echo "Error with ID $id:" . $e->getMessage() . PHP_EOL;
+            echo "Model: $model" . PHP_EOL;
+            echo "Цена: " . $offer->getPrice() . PHP_EOL;
+            echo '--' . PHP_EOL;
         }
     }
 }

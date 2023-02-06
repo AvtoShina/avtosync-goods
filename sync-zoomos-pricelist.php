@@ -31,7 +31,8 @@ $pdo = new PDO(
         $_ENV['DB_DATABASE']
     ),
     $_ENV['DB_USERNAME'],
-    $_ENV['DB_PASSWORD']
+    $_ENV['DB_PASSWORD'],
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4']
 );
 
 foreach ($items as $item) {
